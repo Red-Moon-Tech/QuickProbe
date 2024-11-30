@@ -1,4 +1,4 @@
-package main
+package network
 
 import (
 	"fmt"
@@ -22,7 +22,7 @@ type Network struct {
 	bitmask        uint
 	totalAddresses uint
 	currentAddress uint
-	ended          bool
+	Ended          bool
 }
 
 // IsPrivate проверяет относится ли текущий адрес (Network.currentAddress) к приватным диапазонам
@@ -57,7 +57,7 @@ func (net *Network) Inc() {
 
 	// Проверка на достижение края диапазона
 	if net.currentAddress == net.hostMax {
-		net.ended = true
+		net.Ended = true
 	}
 }
 
@@ -105,6 +105,6 @@ func NewNetwork(address string) *Network {
 		bitmask:        uint(bitmask),
 		totalAddresses: totalAddresses,
 		currentAddress: hostMin,
-		ended:          false,
+		Ended:          false,
 	}
 }

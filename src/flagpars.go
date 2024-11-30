@@ -8,8 +8,8 @@ import (
 func InitFlags() {
 	log.Println("Инициализирую флаги")
 	InputNet = flag.String("Network", "None", "Сеть для сканирования")
-	NumberScanThreads = flag.Uint64("NumberScanThreads", 500, "Количество сканирующих потоков")
-	NumberPingThreads = flag.Uint64("NumberPingThreads", 100, "Количество пингующих потоков")
+	NumberScanThreads = flag.Uint64("NumberScanThreads", 5, "Количество сканирующих потоков")
+	NumberPingThreads = flag.Uint64("NumberPingThreads", 5, "Количество пингующих потоков")
 	AddressBufferSize = flag.Uint64("AddressBufferSize", 0, "Размеров буфера адресов")
 	log.Println("Инициализация флагов завершена")
 }

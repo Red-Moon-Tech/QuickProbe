@@ -1,8 +1,10 @@
 package main
 
 import (
+	"QuickProbe/pkg/network"
+	"QuickProbe/pkg/ping"
+	"QuickProbe/pkg/scan"
 	"log"
-	"sync"
 )
 
 // Инициализируем переменные под хранение флагов
@@ -15,17 +17,8 @@ var (
 
 // Создаём указатели на общие обьекты
 var (
-	IPChannel    chan string
-	RawIPChannel chan string
-)
-
-// Создаем WaitGroups для отслеживания завершения горутин
-var (
-	// WorkWG - Группа горутин отвечающих за запуск/завершение сканирующих потоков
-	WorkWG sync.WaitGroup
-
-	// PingWG - Группа горутин отвечающих за запуск/завершение пингующих потоков
-	PingWG sync.WaitGroup
+	IPChannel    chan string // Канал для передачи проверенных адресов
+	RawIPChannel chan string // Канал для передачи непроверенных адресов
 )
 
 func main() {
@@ -35,7 +28,7 @@ func main() {
 	CheckFlags()
 
 	// Создаём сеть
-	net := NewNetwork(*InputNet)
+	net := network.NewNetwork(*InputNet)
 
 	// Подключаем базу данных
 
@@ -48,22 +41,22 @@ func main() {
 	// Инициализируем рабочие потоки
 	log.Println("Запускаю сканирующие потоки")
 	for i := uint64(0); i < *NumberScanThreads; i++ {
-		WorkWG.Add(1)
-		go ScannerThread(IPChannel)
+		scan.WorkWG.Add(1)
+		go scan.ScannerThread(IPChannel)
 	}
 	log.Println("Запуск сканирующих потоков завершён")
 
 	// Инициализируем пингующие потоки
 	log.Println("Запускаю пингующие потоки")
 	for i := uint64(0); i < *NumberPingThreads; i++ {
-		PingWG.Add(1)
-		go PingingThread(RawIPChannel, IPChannel)
+		ping.PingWG.Add(1)
+		go ping.PingingThread(RawIPChannel, IPChannel)
 	}
 	log.Println("Запуск пингующих потоков завершён")
 
 	// Запускаем основную петлю для генерации и передачи адресов
 	log.Println("Запускаю генерирующую петлю")
-	for !net.ended {
+	for !net.Ended {
 		if !net.IsPrivate() {
 			RawIPChannel <- net.String()
 		}
@@ -82,7 +75,7 @@ func main() {
 	}
 
 	// Ожидаем завершение работы пингующих потоков
-	PingWG.Wait()
+	ping.PingWG.Wait()
 
 	log.Println("Пингующие потоки завершили свою работу")
 	log.Println("Ожидаем завершение работы сканирующих потоков")
@@ -96,7 +89,7 @@ func main() {
 	}
 
 	// Ожидаем завершение работы сканирующих потоков
-	WorkWG.Wait()
+	scan.WorkWG.Wait()
 
 	log.Println("Сканирующие потоки завершили свою работу")
 }
