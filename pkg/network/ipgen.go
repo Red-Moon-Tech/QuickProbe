@@ -34,7 +34,7 @@ func (net *Network) IsPrivate() bool {
 	} else if net.IsPartOfNetwork(thirdPrivateRange) {
 		return true
 	} else if net.IsPartOfNetwork(fourthPrivateRange) {
-		return true
+		return false
 	} else if net.IsPartOfNetwork(linkLocalRange) {
 		return true
 	}
