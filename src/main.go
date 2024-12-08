@@ -4,6 +4,8 @@ import (
 	"QuickProbe/pkg/network"
 	"QuickProbe/pkg/ping"
 	"QuickProbe/pkg/scan"
+	"QuickProbe/pkg/statistic"
+	"context"
 	"log"
 )
 
@@ -38,11 +40,17 @@ func main() {
 	// Инициализирую канал для передачи непроверенных адресов
 	RawIPChannel = make(chan string, *AddressBufferSize)
 
+	// Инициализируем контексты для подсистем
+	statCtx, statCancel := context.WithCancel(context.Background())
+
+	// Инициализируем поток статистики
+	statistic.StatisticStart(statCtx, IPChannel, RawIPChannel)
+
 	// Инициализируем рабочие потоки
 	log.Println("Запускаю сканирующие потоки")
 	for i := uint64(0); i < *NumberScanThreads; i++ {
 		scan.WorkWG.Add(1)
-		go scan.ScannerThread(IPChannel)
+		go scan.ScannerThread(IPChannel, &statistic.PortsCounter)
 	}
 	log.Println("Запуск сканирующих потоков завершён")
 
@@ -90,6 +98,6 @@ func main() {
 
 	// Ожидаем завершение работы сканирующих потоков
 	scan.WorkWG.Wait()
-
+	statCancel()
 	log.Println("Сканирующие потоки завершили свою работу")
 }
