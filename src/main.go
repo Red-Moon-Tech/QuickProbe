@@ -6,7 +6,6 @@ import (
 	"QuickProbe/pkg/scan"
 	"QuickProbe/pkg/statistic"
 	"context"
-	"log"
 )
 
 // Инициализируем переменные под хранение флагов
@@ -47,23 +46,18 @@ func main() {
 	statistic.StatisticStart(statCtx, IPChannel, RawIPChannel)
 
 	// Инициализируем рабочие потоки
-	log.Println("Запускаю сканирующие потоки")
 	for i := uint64(0); i < *NumberScanThreads; i++ {
 		scan.WorkWG.Add(1)
 		go scan.ScannerThread(IPChannel)
 	}
-	log.Println("Запуск сканирующих потоков завершён")
 
 	// Инициализируем пингующие потоки
-	log.Println("Запускаю пингующие потоки")
 	for i := uint64(0); i < *NumberPingThreads; i++ {
 		ping.PingWG.Add(1)
 		go ping.PingingThread(RawIPChannel, IPChannel)
 	}
-	log.Println("Запуск пингующих потоков завершён")
 
 	// Запускаем основную петлю для генерации и передачи адресов
-	log.Println("Запускаю генерирующую петлю")
 	for !net.Ended {
 		if !net.IsPrivate() {
 			RawIPChannel <- net.String()
@@ -71,8 +65,6 @@ func main() {
 
 		net.Inc()
 	}
-	log.Println("Генерирующая петля завершила работу")
-	log.Println("Ожидаем завершение работы пингующих потоков")
 
 	// Закрываем канал пингующих потоков
 	for {
@@ -85,9 +77,6 @@ func main() {
 	// Ожидаем завершение работы пингующих потоков
 	ping.PingWG.Wait()
 
-	log.Println("Пингующие потоки завершили свою работу")
-	log.Println("Ожидаем завершение работы сканирующих потоков")
-
 	// Закрываем канал сканирующих потоков
 	for {
 		if len(IPChannel) == 0 {
@@ -99,5 +88,4 @@ func main() {
 	// Ожидаем завершение работы сканирующих потоков
 	scan.WorkWG.Wait()
 	statCancel()
-	log.Println("Сканирующие потоки завершили свою работу")
 }

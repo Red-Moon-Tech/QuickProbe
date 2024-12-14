@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/gosuri/uilive"
-	"log"
 	"sync"
 	"time"
 )
@@ -26,13 +25,11 @@ var (
 )
 
 func StatisticStart(ctx context.Context, IPChannel chan string, RawIPChannel chan string) {
-	log.Println("Подсистема статистики запускается")
 	go statisticThread(ctx)
 	go speedThread(ctx)
 	go MemoryThread(ctx)
 	go BufferThread(ctx, IPChannel, RawIPChannel)
 	go pingThread(ctx)
-	log.Println("Подсистема статистики запущена")
 
 	time.Sleep(time.Second)
 }
