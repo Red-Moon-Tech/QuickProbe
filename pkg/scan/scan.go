@@ -10,6 +10,7 @@ import (
 
 // Фукнция сканирует порты конкретного адреса
 func scanHost(ip string) []int {
+	// Открытые порты найденные в результате сканирования
 	openPorts := make([]int, 0)
 
 	for port := 1; port <= 1024; port++ {
