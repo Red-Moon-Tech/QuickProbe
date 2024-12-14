@@ -1,6 +1,9 @@
 package scan
 
-import "sync"
+import (
+	"QuickProbe/pkg/statistic"
+	"sync"
+)
 
 var (
 	// WorkWG - Группа горутин отвечающих за запуск/завершение сканирующих потоков
@@ -9,11 +12,10 @@ var (
 
 func ScannerThread(IPChannel chan string, PortsCount *int) {
 	defer WorkWG.Done()
-	var mutex sync.Mutex
 	for {
 		ip, ok := <-IPChannel
 		if ok {
-			ports := scanHost(ip, PortsCount, &mutex)
+			ports := scanHost(ip, PortsCount, &statistic.Mutex)
 			if len(ports) != 0 {
 				for _, port := range ports {
 					println(ip, port)

@@ -4,9 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/gosuri/uilive"
-	probing "github.com/prometheus-community/pro-bing"
 	"log"
-	"runtime"
 	"sync"
 	"time"
 )
@@ -26,16 +24,16 @@ var (
 	PortsSpeed   int
 
 	PingStatus uint64
+	Mutex      sync.Mutex
 )
 
 func StatisticStart(ctx context.Context, IPChannel chan string, RawIPChannel chan string) {
 	log.Println("Подсистема статистики запускается")
-	var mutex sync.Mutex
-	go statisticThread(ctx, &mutex)
-	go speedThread(ctx, &mutex)
-	go MemoryThread(ctx, &mutex)
-	go BufferThread(ctx, IPChannel, RawIPChannel, &mutex)
-	go pingThread(ctx, &mutex)
+	go statisticThread(ctx, &Mutex)
+	go speedThread(ctx, &Mutex)
+	go MemoryThread(ctx, &Mutex)
+	go BufferThread(ctx, IPChannel, RawIPChannel, &Mutex)
+	go pingThread(ctx, &Mutex)
 	log.Println("Подсистема статистики запущена")
 
 	time.Sleep(time.Second)
@@ -59,92 +57,6 @@ func statisticThread(ctx context.Context, mutex *sync.Mutex) {
 			fmt.Fprintf(writer.Newline(), "Ping status: %d ms \n", PingStatus)
 			mutex.Unlock()
 			time.Sleep(time.Second / 2)
-		}
-	}
-}
-
-func BufferThread(ctx context.Context, IPChannel chan string, RawIPChannel chan string, mutex *sync.Mutex) {
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			mutex.Lock()
-			NotCheckedLenBuffer = uint64(len(RawIPChannel))
-			NotCheckedCapBuffer = uint64(cap(RawIPChannel))
-
-			CheckedLenBuffer = uint64(len(IPChannel))
-			CheckedCapBuffer = uint64(cap(IPChannel))
-			mutex.Unlock()
-			time.Sleep(time.Millisecond * 100)
-		}
-	}
-}
-
-func pingThread(ctx context.Context, mutex *sync.Mutex) {
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			pinger, err := probing.NewPinger("8.8.8.8")
-			if err != nil {
-				panic(err)
-			}
-
-			pinger.Count = 1
-
-			err = pinger.Run()
-			if err != nil {
-				panic(err)
-			}
-
-			stats := pinger.Statistics()
-
-			mutex.Lock()
-			if stats.PacketsRecv != 0 {
-				PingStatus = uint64(stats.MaxRtt.Milliseconds())
-			} else {
-				PingStatus = 0
-			}
-			mutex.Unlock()
-			time.Sleep(time.Millisecond * 100)
-		}
-	}
-}
-
-func MemoryThread(ctx context.Context, mutex *sync.Mutex) {
-	var m runtime.MemStats
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			runtime.ReadMemStats(&m)
-			mutex.Lock()
-			AllocatedMemory = m.Alloc
-			mutex.Unlock()
-			time.Sleep(time.Millisecond * 100)
-		}
-	}
-}
-
-func speedThread(ctx context.Context, mutex *sync.Mutex) {
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			mutex.Lock()
-			p := PortsCounter
-			mutex.Unlock()
-
-			time.Sleep(time.Second)
-
-			mutex.Lock()
-			PortsSpeed = PortsCounter - p // Находим скорость как разность портов за секунду
-			mutex.Unlock()
-
 		}
 	}
 }
