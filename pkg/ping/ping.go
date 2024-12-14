@@ -15,6 +15,9 @@ func pingTest(host string) bool {
 	pinger.Count = 1
 	pinger.Timeout = time.Millisecond * 300
 
+	// Отключение отладочной информации
+	pinger.Debug = false
+
 	err = pinger.Run()
 	if err != nil {
 		panic(err)

@@ -44,13 +44,19 @@ func statisticThread(ctx context.Context) {
 			return
 		default:
 			StatisticMutex.Lock()
-			fmt.Fprintf(writer, "Scanned ports: %d \n", PortsCounter)
-			fmt.Fprintf(writer.Newline(), "Speed: %d ports/sec\n", PortsSpeed)
-			fmt.Fprintf(writer.Newline(), "Allocated Memory: %d kB \n", AllocatedMemory/1024)
-			fmt.Fprintf(writer.Newline(), "Not Checked Buffer: %d %d \n", NotCheckedLenBuffer, NotCheckedCapBuffer)
-			fmt.Fprintf(writer.Newline(), "Checked Buffer: %d %d \n", CheckedLenBuffer, CheckedCapBuffer)
-			fmt.Fprintf(writer.Newline(), "Ping status: %d ms \n", PingStatus)
+
+			output := ""
+			output += fmt.Sprintf("Scanned ports: %d \n", PortsCounter)
+			output += fmt.Sprintf("Speed: %d ports/sec\n", PortsSpeed)
+			output += fmt.Sprintf("Allocated Memory: %d kB \n", AllocatedMemory/1024)
+			output += fmt.Sprintf("Not Checked Buffer: %d %d \n", NotCheckedLenBuffer, NotCheckedCapBuffer)
+			output += fmt.Sprintf("Checked Buffer: %d %d \n", CheckedLenBuffer, CheckedCapBuffer)
+			output += fmt.Sprintf("Ping status: %d ms \n", PingStatus)
+
 			StatisticMutex.Unlock()
+
+			fmt.Fprintf(writer, output)
+
 			time.Sleep(time.Second / 2)
 		}
 	}
