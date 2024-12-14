@@ -1,6 +1,7 @@
 package network
 
 import (
+	"QuickProbe/pkg/argflags"
 	"fmt"
 	"math"
 	"strconv"
@@ -26,20 +27,20 @@ type Network struct {
 }
 
 // IsPrivate проверяет относится ли текущий адрес (Network.currentAddress) к приватным диапазонам
-func (net *Network) IsPrivate() bool {
+func (net *Network) IsPrivate() (bool, *Network) {
 	if net.IsPartOfNetwork(firstPrivateRange) {
-		return true
+		return true, firstPrivateRange
 	} else if net.IsPartOfNetwork(secondPrivateRange) {
-		return true
+		return true, secondPrivateRange
 	} else if net.IsPartOfNetwork(thirdPrivateRange) {
-		return true
+		return true, thirdPrivateRange
 	} else if net.IsPartOfNetwork(fourthPrivateRange) {
-		return false
+		return true, fourthPrivateRange
 	} else if net.IsPartOfNetwork(linkLocalRange) {
-		return true
+		return true, linkLocalRange
 	}
 
-	return false
+	return false, nil
 }
 
 // IsPartOfNetwork проверяет принадлежит ли текущий адрес (Network.currentAddress) к указаной сети
@@ -55,8 +56,17 @@ func (net *Network) IsPartOfNetwork(AnotherNetwork *Network) bool {
 func (net *Network) Inc() {
 	net.currentAddress += 1
 
+	// Пропускаем приватный диапазон
+	if *argflags.SkipPrivateRange {
+		private, privateNet := net.IsPrivate()
+
+		if private {
+			net.currentAddress = privateNet.hostMax + 1
+		}
+	}
+
 	// Проверка на достижение края диапазона
-	if net.currentAddress == net.hostMax {
+	if net.currentAddress >= net.hostMax {
 		net.Ended = true
 	}
 }

@@ -52,10 +52,7 @@ func main() {
 
 	// Запускаем основную петлю для генерации и передачи адресов
 	for !net.Ended {
-		if !net.IsPrivate() {
-			PingIPChannel <- net.String()
-		}
-
+		PingIPChannel <- net.String()
 		net.Inc()
 	}
 
@@ -80,5 +77,7 @@ func main() {
 
 	// Ожидаем завершение работы сканирующих потоков
 	scan.WorkWG.Wait()
+
+	// Завершаем потоки связанные с работой подсистемы сбора статистики
 	statCancel()
 }
