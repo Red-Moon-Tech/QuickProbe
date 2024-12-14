@@ -1,23 +1,23 @@
 package scan
 
 import (
+	"QuickProbe/pkg/statistic"
 	"net"
 	"strconv"
-	"sync"
 	"time"
 )
 
 // Фукнция сканирует порты конкретного адреса
-func scanHost(ip string, PortsCount *int, mutex *sync.Mutex) []int {
+func scanHost(ip string, PortsCount *int) []int {
 	openPorts := make([]int, 0)
 
 	for port := 1; port <= 1024; port++ {
 		d := net.Dialer{Timeout: time.Millisecond * 300}
 		conn, err := d.Dial("tcp", ip+":"+strconv.Itoa(port))
 
-		mutex.Lock()
+		statistic.StatisticMutex.Lock()
 		*PortsCount += 1
-		mutex.Unlock()
+		statistic.StatisticMutex.Unlock()
 		if err == nil {
 			conn.Close()
 			openPorts = append(openPorts, port)

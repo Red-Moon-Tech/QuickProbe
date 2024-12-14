@@ -21,25 +21,25 @@ var (
 	CheckedCapBuffer uint64 // Проверенные адреса вместимость
 
 	PortsCounter int // Счетчик отсканированных портов
-	PortsSpeed   int
+	PortsSpeed   int // Скорость в портах в секунду
 
-	PingStatus uint64
-	Mutex      sync.Mutex
+	PingStatus     uint64
+	StatisticMutex sync.Mutex
 )
 
 func StatisticStart(ctx context.Context, IPChannel chan string, RawIPChannel chan string) {
 	log.Println("Подсистема статистики запускается")
-	go statisticThread(ctx, &Mutex)
-	go speedThread(ctx, &Mutex)
-	go MemoryThread(ctx, &Mutex)
-	go BufferThread(ctx, IPChannel, RawIPChannel, &Mutex)
-	go pingThread(ctx, &Mutex)
+	go statisticThread(ctx)
+	go speedThread(ctx)
+	go MemoryThread(ctx)
+	go BufferThread(ctx, IPChannel, RawIPChannel)
+	go pingThread(ctx)
 	log.Println("Подсистема статистики запущена")
 
 	time.Sleep(time.Second)
 }
 
-func statisticThread(ctx context.Context, mutex *sync.Mutex) {
+func statisticThread(ctx context.Context) {
 	writer := uilive.New()
 	writer.Start()
 	for {
@@ -48,14 +48,14 @@ func statisticThread(ctx context.Context, mutex *sync.Mutex) {
 			writer.Stop()
 			return
 		default:
-			mutex.Lock()
+			StatisticMutex.Lock()
 			fmt.Fprintf(writer, "Scanned ports: %d \n", PortsCounter)
 			fmt.Fprintf(writer.Newline(), "Speed: %d ports/sec\n", PortsSpeed)
 			fmt.Fprintf(writer.Newline(), "Allocated Memory: %d kB \n", AllocatedMemory/1024)
 			fmt.Fprintf(writer.Newline(), "Not Checked Buffer: %d %d \n", NotCheckedLenBuffer, NotCheckedCapBuffer)
 			fmt.Fprintf(writer.Newline(), "Checked Buffer: %d %d \n", CheckedLenBuffer, CheckedCapBuffer)
 			fmt.Fprintf(writer.Newline(), "Ping status: %d ms \n", PingStatus)
-			mutex.Unlock()
+			StatisticMutex.Unlock()
 			time.Sleep(time.Second / 2)
 		}
 	}

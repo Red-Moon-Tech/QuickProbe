@@ -3,11 +3,10 @@ package statistic
 import (
 	"context"
 	"runtime"
-	"sync"
 	"time"
 )
 
-func MemoryThread(ctx context.Context, mutex *sync.Mutex) {
+func MemoryThread(ctx context.Context) {
 	var m runtime.MemStats
 	for {
 		select {
@@ -15,9 +14,9 @@ func MemoryThread(ctx context.Context, mutex *sync.Mutex) {
 			return
 		default:
 			runtime.ReadMemStats(&m)
-			mutex.Lock()
+			StatisticMutex.Lock()
 			AllocatedMemory = m.Alloc
-			mutex.Unlock()
+			StatisticMutex.Unlock()
 			time.Sleep(time.Millisecond * 100)
 		}
 	}

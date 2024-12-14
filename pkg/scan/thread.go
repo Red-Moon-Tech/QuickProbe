@@ -1,7 +1,6 @@
 package scan
 
 import (
-	"QuickProbe/pkg/statistic"
 	"sync"
 )
 
@@ -15,7 +14,7 @@ func ScannerThread(IPChannel chan string, PortsCount *int) {
 	for {
 		ip, ok := <-IPChannel
 		if ok {
-			ports := scanHost(ip, PortsCount, &statistic.Mutex)
+			ports := scanHost(ip, PortsCount)
 			if len(ports) != 0 {
 				for _, port := range ports {
 					println(ip, port)

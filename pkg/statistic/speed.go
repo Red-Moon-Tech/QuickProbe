@@ -2,25 +2,24 @@ package statistic
 
 import (
 	"context"
-	"sync"
 	"time"
 )
 
-func speedThread(ctx context.Context, mutex *sync.Mutex) {
+func speedThread(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		default:
-			mutex.Lock()
+			StatisticMutex.Lock()
 			p := PortsCounter
-			mutex.Unlock()
+			StatisticMutex.Unlock()
 
 			time.Sleep(time.Second)
 
-			mutex.Lock()
+			StatisticMutex.Lock()
 			PortsSpeed = PortsCounter - p // Находим скорость как разность портов за секунду
-			mutex.Unlock()
+			StatisticMutex.Unlock()
 
 		}
 	}

@@ -3,11 +3,10 @@ package statistic
 import (
 	"context"
 	probing "github.com/prometheus-community/pro-bing"
-	"sync"
 	"time"
 )
 
-func pingThread(ctx context.Context, mutex *sync.Mutex) {
+func pingThread(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
@@ -27,13 +26,13 @@ func pingThread(ctx context.Context, mutex *sync.Mutex) {
 
 			stats := pinger.Statistics()
 
-			mutex.Lock()
+			StatisticMutex.Lock()
 			if stats.PacketsRecv != 0 {
 				PingStatus = uint64(stats.MaxRtt.Milliseconds())
 			} else {
 				PingStatus = 0
 			}
-			mutex.Unlock()
+			StatisticMutex.Unlock()
 			time.Sleep(time.Millisecond * 100)
 		}
 	}
