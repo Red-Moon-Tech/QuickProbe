@@ -9,10 +9,10 @@ import (
 	"context"
 )
 
-// Создаём указатели на общие обьекты
+// Создаём общие обьекты
 var (
-	IPChannel    chan string // Канал для передачи проверенных адресов
-	RawIPChannel chan string // Канал для передачи непроверенных адресов
+	ScanIPChannel chan string // Канал для передачи адресов для сканирования
+	PingIPChannel chan string // Канал для передачи адресов для пингования
 )
 
 func main() {
@@ -26,34 +26,34 @@ func main() {
 
 	// Подключаем базу данных
 
-	// Инициализируем канал для передачи проверенных адресов
-	IPChannel = make(chan string, *argflags.AddressBufferSize)
+	// Инициализируем канал для передачи адресов для сканирования
+	ScanIPChannel = make(chan string, *argflags.AddressBufferSize)
 
-	// Инициализирую канал для передачи непроверенных адресов
-	RawIPChannel = make(chan string, *argflags.AddressBufferSize)
+	// Инициализирую канал для передачи адресов для пингования
+	PingIPChannel = make(chan string, *argflags.AddressBufferSize)
 
 	// Инициализируем контексты для подсистем
 	statCtx, statCancel := context.WithCancel(context.Background())
 
 	// Инициализируем поток статистики
-	statistic.StatisticStart(statCtx, IPChannel, RawIPChannel)
+	statistic.StatisticStart(statCtx, ScanIPChannel, PingIPChannel)
 
 	// Инициализируем рабочие потоки
 	for i := uint64(0); i < *argflags.NumberScanThreads; i++ {
 		scan.WorkWG.Add(1)
-		go scan.ScannerThread(IPChannel)
+		go scan.ScannerThread(ScanIPChannel)
 	}
 
 	// Инициализируем пингующие потоки
 	for i := uint64(0); i < *argflags.NumberPingThreads; i++ {
 		ping.PingWG.Add(1)
-		go ping.PingingThread(RawIPChannel, IPChannel)
+		go ping.PingingThread(PingIPChannel, ScanIPChannel)
 	}
 
 	// Запускаем основную петлю для генерации и передачи адресов
 	for !net.Ended {
 		if !net.IsPrivate() {
-			RawIPChannel <- net.String()
+			PingIPChannel <- net.String()
 		}
 
 		net.Inc()
@@ -61,8 +61,8 @@ func main() {
 
 	// Закрываем канал пингующих потоков
 	for {
-		if len(RawIPChannel) == 0 {
-			close(RawIPChannel)
+		if len(PingIPChannel) == 0 {
+			close(PingIPChannel)
 			break
 		}
 	}
@@ -72,8 +72,8 @@ func main() {
 
 	// Закрываем канал сканирующих потоков
 	for {
-		if len(IPChannel) == 0 {
-			close(IPChannel)
+		if len(ScanIPChannel) == 0 {
+			close(ScanIPChannel)
 			break
 		}
 	}
