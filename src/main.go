@@ -1,19 +1,12 @@
 package main
 
 import (
+	"QuickProbe/pkg/argflags"
 	"QuickProbe/pkg/network"
 	"QuickProbe/pkg/ping"
 	"QuickProbe/pkg/scan"
 	"QuickProbe/pkg/statistic"
 	"context"
-)
-
-// Инициализируем переменные под хранение флагов
-var (
-	InputNet          *string // Сеть для сканирования
-	NumberScanThreads *uint64 // Количество потокв для сканирования
-	NumberPingThreads *uint64 // Количество потокв для пингования
-	AddressBufferSize *uint64 // Размер буфера адресов
 )
 
 // Создаём указатели на общие обьекты
@@ -24,20 +17,20 @@ var (
 
 func main() {
 	// Получаем флаги
-	InitFlags()
-	ParseFlags()
-	CheckFlags()
+	argflags.InitFlags()
+	argflags.ParseFlags()
+	argflags.CheckFlags()
 
 	// Создаём сеть
-	net := network.NewNetwork(*InputNet)
+	net := network.NewNetwork(*argflags.InputNet)
 
 	// Подключаем базу данных
 
 	// Инициализируем канал для передачи проверенных адресов
-	IPChannel = make(chan string, *AddressBufferSize)
+	IPChannel = make(chan string, *argflags.AddressBufferSize)
 
 	// Инициализирую канал для передачи непроверенных адресов
-	RawIPChannel = make(chan string, *AddressBufferSize)
+	RawIPChannel = make(chan string, *argflags.AddressBufferSize)
 
 	// Инициализируем контексты для подсистем
 	statCtx, statCancel := context.WithCancel(context.Background())
@@ -46,13 +39,13 @@ func main() {
 	statistic.StatisticStart(statCtx, IPChannel, RawIPChannel)
 
 	// Инициализируем рабочие потоки
-	for i := uint64(0); i < *NumberScanThreads; i++ {
+	for i := uint64(0); i < *argflags.NumberScanThreads; i++ {
 		scan.WorkWG.Add(1)
 		go scan.ScannerThread(IPChannel)
 	}
 
 	// Инициализируем пингующие потоки
-	for i := uint64(0); i < *NumberPingThreads; i++ {
+	for i := uint64(0); i < *argflags.NumberPingThreads; i++ {
 		ping.PingWG.Add(1)
 		go ping.PingingThread(RawIPChannel, IPChannel)
 	}

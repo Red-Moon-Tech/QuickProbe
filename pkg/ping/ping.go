@@ -1,6 +1,7 @@
 package ping
 
 import (
+	"QuickProbe/pkg/argflags"
 	probing "github.com/prometheus-community/pro-bing"
 	"time"
 )
@@ -13,7 +14,7 @@ func pingTest(host string) bool {
 	}
 
 	pinger.Count = 1
-	pinger.Timeout = time.Millisecond * 300
+	pinger.Timeout = time.Millisecond * time.Duration(*argflags.Timeout)
 
 	// Отключение отладочной информации
 	pinger.Debug = false
