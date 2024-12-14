@@ -50,7 +50,7 @@ func main() {
 	log.Println("Запускаю сканирующие потоки")
 	for i := uint64(0); i < *NumberScanThreads; i++ {
 		scan.WorkWG.Add(1)
-		go scan.ScannerThread(IPChannel, &statistic.PortsCounter)
+		go scan.ScannerThread(IPChannel)
 	}
 	log.Println("Запуск сканирующих потоков завершён")
 

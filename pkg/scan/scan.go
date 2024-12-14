@@ -8,7 +8,7 @@ import (
 )
 
 // Фукнция сканирует порты конкретного адреса
-func scanHost(ip string, PortsCount *int) []int {
+func scanHost(ip string) []int {
 	openPorts := make([]int, 0)
 
 	for port := 1; port <= 1024; port++ {
@@ -16,7 +16,7 @@ func scanHost(ip string, PortsCount *int) []int {
 		conn, err := d.Dial("tcp", ip+":"+strconv.Itoa(port))
 
 		statistic.StatisticMutex.Lock()
-		*PortsCount += 1
+		statistic.PortsCounter += 1
 		statistic.StatisticMutex.Unlock()
 		if err == nil {
 			conn.Close()

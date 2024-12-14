@@ -9,12 +9,12 @@ var (
 	WorkWG sync.WaitGroup
 )
 
-func ScannerThread(IPChannel chan string, PortsCount *int) {
+func ScannerThread(IPChannel chan string) {
 	defer WorkWG.Done()
 	for {
 		ip, ok := <-IPChannel
 		if ok {
-			ports := scanHost(ip, PortsCount)
+			ports := scanHost(ip)
 			if len(ports) != 0 {
 				for _, port := range ports {
 					println(ip, port)
