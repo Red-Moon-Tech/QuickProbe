@@ -22,7 +22,7 @@ func InitFlags() {
 	NumberPingThreads = flag.Uint64("NumberPingThreads", 5, "Количество пингующих потоков")
 	AddressBufferSize = flag.Uint64("AddressBufferSize", 0, "Размеров буфера адресов")
 	Timeout = flag.Uint64("Timeout", 100, "Таймаут при подключении к хосту (мс)")
-	SkipPrivateRange = flag.Bool("SkipPrivateRang", true, "Пропуск приватных диапазонов при сканировании")
+	SkipPrivateRange = flag.Bool("SkipPrivateRange", true, "Пропуск приватных диапазонов при сканировании")
 
 	// Определяем алиасы для флагов
 	flag.StringVar(InputNet, "n", "None", "Сеть для сканирования (алиас InputNet)")
@@ -30,7 +30,7 @@ func InitFlags() {
 	flag.Uint64Var(NumberPingThreads, "pT", 5, "Количество пингующих потоков (алиас NumberPingThreads)")
 	flag.Uint64Var(AddressBufferSize, "bS", 0, "Размеров буфера адресов (алиас AddressBufferSize)")
 	flag.Uint64Var(Timeout, "t", 100, "Таймаут при подключении к хосту (мс) (алиас Timeout)")
-	flag.BoolVar(SkipPrivateRange, "sP", true, "Пропуск приватных диапазонов при сканировании (алиас SkipPrivateRang)")
+	flag.BoolVar(SkipPrivateRange, "sP", true, "Пропуск приватных диапазонов при сканировании (алиас SkipPrivateRange)")
 
 }
 
