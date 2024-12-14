@@ -14,12 +14,7 @@ func ScannerThread(IPChannel chan string) {
 	for {
 		ip, ok := <-IPChannel
 		if ok {
-			ports := scanHost(ip)
-			if len(ports) != 0 {
-				for _, port := range ports {
-					println(ip, port)
-				}
-			}
+			_ = scanHost(ip)
 		} else {
 			break
 		}
