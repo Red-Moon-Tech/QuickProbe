@@ -10,8 +10,6 @@ import (
 )
 
 var (
-	Speed uint64 // Скорость в портах в секунду
-
 	AllocatedMemory uint64 // Сколько выделено памяти
 
 	NotCheckedLenBuffer uint64 // Непроверенные адреса заполненность
