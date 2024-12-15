@@ -1,6 +1,7 @@
 package argflags
 
 import (
+	"QuickProbe/pkg/ports"
 	"flag"
 	"log"
 )
@@ -12,7 +13,9 @@ var (
 	NumberPingThreads *uint64 // Количество потокв для пингования
 	AddressBufferSize *uint64 // Размер буфера адресов
 	Timeout           *uint64 // Таймаут при подключении к хосту (мс)
-	SkipPrivateRange  *bool
+	SkipPrivateRange  *bool   // Флаг пропуска приватных диапазонов
+	rawPortsList      *string // Строка с необработанными портам
+	PortsList         []int   // Готовый к использованию массив портов
 )
 
 func InitFlags() {
@@ -23,6 +26,7 @@ func InitFlags() {
 	AddressBufferSize = flag.Uint64("AddressBufferSize", 0, "Размеров буфера адресов")
 	Timeout = flag.Uint64("Timeout", 100, "Таймаут при подключении к хосту (мс)")
 	SkipPrivateRange = flag.Bool("SkipPrivateRange", true, "Пропуск приватных диапазонов при сканировании")
+	rawPortsList = flag.String("Ports", "None", "Список портов для сканирования")
 
 	// Определяем алиасы для флагов
 	flag.StringVar(InputNet, "n", "None", "Сеть для сканирования (алиас InputNet)")
@@ -31,7 +35,7 @@ func InitFlags() {
 	flag.Uint64Var(AddressBufferSize, "bS", 0, "Размеров буфера адресов (алиас AddressBufferSize)")
 	flag.Uint64Var(Timeout, "t", 100, "Таймаут при подключении к хосту (мс) (алиас Timeout)")
 	flag.BoolVar(SkipPrivateRange, "sP", true, "Пропуск приватных диапазонов при сканировании (алиас SkipPrivateRange)")
-
+	flag.StringVar(rawPortsList, "p", "None", "Список портов для сканирования (алиас Ports)")
 }
 
 func ParseFlags() {
@@ -42,6 +46,12 @@ func ParseFlags() {
 		*AddressBufferSize = *NumberScanThreads
 	}
 
+	// Парсим список портов
+	if *rawPortsList == "None" {
+		PortsList = ports.StringToPortsList("1-1024")
+	} else {
+		PortsList = ports.StringToPortsList(*rawPortsList)
+	}
 }
 
 func CheckFlags() {
