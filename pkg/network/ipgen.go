@@ -10,17 +10,17 @@ import (
 
 // Обьявляем приватные диапазоны
 var (
-	firstPrivateRange  = NewNetwork("10.0.0.0/8")
-	secondPrivateRange = NewNetwork("100.64.0.0/10")
-	thirdPrivateRange  = NewNetwork("172.16.0.0/12")
-	fourthPrivateRange = NewNetwork("192.168.0.0/16")
-	linkLocalRange     = NewNetwork("127.0.0.0/8")
+	privateRangeClassA = NewNetwork("10.0.0.0/8")      // Класс A
+	privateRangeClassB = NewNetwork("172.16.0.0/12")   // Класс B
+	privateRangeClassC = NewNetwork("192.168.0.0/16")  // Класс C
+	privateRangeShared = NewNetwork("100.64.0.0/10")   // Shared Address Space (RFC 6598)
+	linkLocalRange     = NewNetwork("127.0.0.0/8")     // Локальный адрес (loopback)
+	specialRange       = NewNetwork("0.0.0.0-1.0.0.0") // Специальные адреса
 )
 
 type Network struct {
 	hostMin        uint
 	hostMax        uint
-	bitmask        uint
 	totalAddresses uint
 	currentAddress uint
 	Ended          bool
@@ -28,19 +28,24 @@ type Network struct {
 
 // IsPrivate проверяет относится ли текущий адрес (Network.currentAddress) к приватным диапазонам
 func (net *Network) IsPrivate() (bool, *Network) {
-	if net.IsPartOfNetwork(firstPrivateRange) {
-		return true, firstPrivateRange
-	} else if net.IsPartOfNetwork(secondPrivateRange) {
-		return true, secondPrivateRange
-	} else if net.IsPartOfNetwork(thirdPrivateRange) {
-		return true, thirdPrivateRange
-	} else if net.IsPartOfNetwork(fourthPrivateRange) {
-		return true, fourthPrivateRange
-	} else if net.IsPartOfNetwork(linkLocalRange) {
+	switch {
+	case net.IsPartOfNetwork(privateRangeClassA):
+		return true, privateRangeClassA
+	case net.IsPartOfNetwork(privateRangeClassB):
+		return true, privateRangeClassB
+	case net.IsPartOfNetwork(privateRangeClassC):
+		return true, privateRangeClassC
+	case net.IsPartOfNetwork(privateRangeShared):
+		return true, privateRangeShared
+	case net.IsPartOfNetwork(linkLocalRange):
 		return true, linkLocalRange
-	}
+	case net.IsPartOfNetwork(specialRange):
+		return true, specialRange
 
-	return false, nil
+	default:
+		return false, nil
+
+	}
 }
 
 // IsPartOfNetwork проверяет принадлежит ли текущий адрес (Network.currentAddress) к указаной сети
@@ -66,7 +71,7 @@ func (net *Network) Inc() {
 	}
 
 	// Проверка на достижение края диапазона
-	if net.currentAddress >= net.hostMax {
+	if net.currentAddress > net.hostMax {
 		net.Ended = true
 	}
 }
@@ -82,37 +87,55 @@ func (net *Network) String() string {
 	return fmt.Sprintf("%d.%d.%d.%d", firstOctet, secondOctet, thirdOctet, fourthOctet)
 }
 
+// NewNetwork - конструктор сети
 func NewNetwork(address string) *Network {
-	// Отделяем IP от маски
-	splitAddress := strings.Split(address, "/")
-	ip := splitAddress[0]
-	bitmask, err := strconv.Atoi(splitAddress[1])
-	if err != nil {
-		panic(err)
-	}
+	// Определяем переменные для полей
+	var (
+		hostMin        uint
+		hostMax        uint
+		bitmask        uint
+		totalAddresses uint
+	)
 
-	// Получаем количество адресов в сети
-	totalAddresses := uint(math.Pow(2, float64(32-bitmask)))
-
-	// Преобразуем IP в число
-	splitIP := strings.Split(ip, ".")
-	var intIP uint
-	for i := 0; i < 4; i++ {
-		cnt, err := strconv.Atoi(splitIP[i])
+	// Определяем тип адреса
+	if strings.Contains(address, "/") {
+		// Отделяем IP от маски
+		splitAddress := strings.Split(address, "/")
+		ip := splitAddress[0]
+		bm, err := strconv.Atoi(splitAddress[1])
 		if err != nil {
 			panic(err)
 		}
-		intIP += uint(cnt) * uint(math.Pow(2, float64(24-i*8)))
-	}
+		bitmask = uint(bm)
 
-	// Получаем минимальный и максимальный адрес
-	hostMin := intIP & (intIP ^ uint(math.Pow(2, float64(32-bitmask))-1))
-	hostMax := hostMin + totalAddresses
+		// Получаем количество адресов в сети
+		totalAddresses = uint(math.Pow(2, float64(32-bitmask)))
+
+		// Преобразуем IP в число
+		intIP := ipToInt(ip)
+
+		// Получаем минимальный и максимальный адрес
+		hostMin = intIP & (intIP ^ uint(math.Pow(2, float64(32-bitmask))-1))
+		hostMax = hostMin + totalAddresses
+	} else if strings.Contains(address, "-") {
+		// Отделяем начальный и конечный адрес
+		addresses := strings.Split(address, "-")
+
+		// Преобразуем IP в числа
+		initialIP := ipToInt(addresses[0])
+		finalIP := ipToInt(addresses[1])
+
+		// Устанавлиаем минимальный и максимальный адрес
+		hostMin = initialIP
+		hostMax = finalIP
+
+		// Устанавлиаем количество адресов в диапазоне
+		totalAddresses = finalIP - initialIP
+	}
 
 	return &Network{
 		hostMin:        hostMin,
 		hostMax:        hostMax,
-		bitmask:        uint(bitmask),
 		totalAddresses: totalAddresses,
 		currentAddress: hostMin,
 		Ended:          false,
