@@ -18,12 +18,16 @@ func scanHost(ip string) []int {
 	portsArray = append(portsArray, argflags.PortsList...)
 
 	for _, port := range portsArray {
+		// Подключаемся к хосту
 		d := net.Dialer{Timeout: time.Millisecond * time.Duration(*argflags.Timeout)}
 		conn, err := d.Dial("tcp", ip+":"+strconv.Itoa(port))
 
+		// Увеличиваем счётчик отсканированных портов
 		statistic.StatisticMutex.Lock()
 		statistic.PortsCounter += 1
 		statistic.StatisticMutex.Unlock()
+
+		// Если соединение было успешно, то закрываем его и добавляем порт в список
 		if err == nil {
 			conn.Close()
 			openPorts = append(openPorts, port)
