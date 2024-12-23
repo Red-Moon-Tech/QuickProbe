@@ -4,6 +4,7 @@ import (
 	"QuickProbe/pkg/argflags"
 	"QuickProbe/pkg/network"
 	"QuickProbe/pkg/ping"
+	"QuickProbe/pkg/results"
 	"QuickProbe/pkg/scan"
 	"QuickProbe/pkg/statistic"
 	"context"
@@ -23,6 +24,9 @@ func main() {
 
 	// Создаём сеть
 	net := network.NewNetwork(*argflags.InputNet)
+
+	// Инициализируем пакет результатов
+	results.Init()
 
 	// Подключаем базу данных
 
@@ -80,4 +84,7 @@ func main() {
 
 	// Завершаем потоки связанные с работой подсистемы сбора статистики
 	statCancel()
+
+	// Выводим результаты сканирования
+	results.ShowResults()
 }

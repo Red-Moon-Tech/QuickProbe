@@ -14,7 +14,7 @@ func ScannerThread(IPChannel chan string) {
 	for {
 		ip, ok := <-IPChannel
 		if ok {
-			_ = scanHost(ip)
+			scanHost(ip)
 		} else {
 			break
 		}

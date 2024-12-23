@@ -2,6 +2,7 @@ package scan
 
 import (
 	"QuickProbe/pkg/argflags"
+	"QuickProbe/pkg/results"
 	"QuickProbe/pkg/statistic"
 	"net"
 	"strconv"
@@ -9,7 +10,7 @@ import (
 )
 
 // Фукнция сканирует порты конкретного адреса
-func scanHost(ip string) []int {
+func scanHost(ip string) {
 	// Открытые порты найденные в результате сканирования
 	openPorts := make([]int, 0)
 
@@ -33,6 +34,9 @@ func scanHost(ip string) []int {
 			openPorts = append(openPorts, port)
 		}
 	}
-
-	return openPorts
+	results.ResMutex.Lock()
+	if len(openPorts) > 0 {
+		results.ResultMap[ip] = openPorts
+	}
+	results.ResMutex.Unlock()
 }
