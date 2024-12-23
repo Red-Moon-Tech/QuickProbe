@@ -22,4 +22,4 @@ jobs:
         go-version: '1.23.1'
 
     - name: Build
-      run: go build -v ./src/
+      run: cd ./src; go build -v .
