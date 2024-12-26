@@ -70,6 +70,13 @@ func (net *Network) Inc() {
 		}
 	}
 
+	if *argflags.SkipAddressRange != "None" {
+		SkipAddr := NewNetwork(*argflags.SkipAddressRange)
+		if net.IsPartOfNetwork(SkipAddr) {
+			net.currentAddress = SkipAddr.hostMax + 1
+		}
+	}
+
 	// Проверка на достижение края диапазона
 	if net.currentAddress > net.hostMax {
 		net.Ended = true
