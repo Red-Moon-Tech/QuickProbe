@@ -8,6 +8,7 @@ import (
 	"QuickProbe/pkg/scan"
 	"QuickProbe/pkg/statistic"
 	"context"
+	"os"
 )
 
 // Создаём общие обьекты
@@ -21,6 +22,12 @@ func main() {
 	argflags.InitFlags()
 	argflags.ParseFlags()
 	argflags.CheckFlags()
+
+	// Проверяем если флаг Network - файл
+	if _, err := os.Stat(*argflags.InputNet); err == nil {
+		data, _ := os.ReadFile(*argflags.InputNet)
+		*argflags.InputNet = string(data)
+	}
 
 	// Создаём сеть
 	net := network.NewNetwork(*argflags.InputNet)
