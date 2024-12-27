@@ -17,3 +17,13 @@ Clean build files:
 ```
 make clean
 ```
+### Usage
+____
+Example of usage:
+```
+./quickprobe --Network 192.168.1.0/24 --SkipPrivateRange=false 
+```
+Example of usage #2:
+```
+./quickprobe --Network ip.txt --Timeout=50 -sT=10 -sP=10 -p=22,80,443,3030
+```
