@@ -13,6 +13,9 @@ func Init() {
 }
 func ShowResults() {
 	for key, value := range ResultMap {
-		fmt.Printf("Host %s - %d open ports \n", key, len(value))
+		fmt.Println("\nHost", key)
+		for _, i := range value {
+			fmt.Printf("Discovered open port %d on %s\n", i, key)
+		}
 	}
 }
