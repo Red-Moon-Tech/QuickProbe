@@ -50,15 +50,25 @@ func main() {
 	statistic.StatisticStart(statCtx, ScanIPChannel, PingIPChannel)
 
 	// Инициализируем рабочие потоки
-	for i := uint64(0); i < *argflags.NumberScanThreads; i++ {
-		scan.WorkWG.Add(1)
-		go scan.ScannerThread(ScanIPChannel)
+	if *argflags.SkipPingThreads {
+		// Если флаг SkipPingThreads == true, то берем хосты прямиком из PingIpChannel
+		for i := uint64(0); i < *argflags.NumberScanThreads; i++ {
+			scan.WorkWG.Add(1)
+			go scan.ScannerThread(PingIPChannel)
+		}
+	} else {
+		for i := uint64(0); i < *argflags.NumberScanThreads; i++ {
+			scan.WorkWG.Add(1)
+			go scan.ScannerThread(ScanIPChannel)
+		}
 	}
 
 	// Инициализируем пингующие потоки
-	for i := uint64(0); i < *argflags.NumberPingThreads; i++ {
-		ping.PingWG.Add(1)
-		go ping.PingingThread(PingIPChannel, ScanIPChannel)
+	if !(*argflags.SkipPingThreads) {
+		for i := uint64(0); i < *argflags.NumberPingThreads; i++ {
+			ping.PingWG.Add(1)
+			go ping.PingingThread(PingIPChannel, ScanIPChannel)
+		}
 	}
 
 	// Запускаем основную петлю для генерации и передачи адресов
