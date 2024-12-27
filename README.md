@@ -19,6 +19,10 @@ make clean
 ```
 ### Usage
 ____
+Commands description:
+```
+./quickprobe --help
+```
 Example of usage:
 ```
 ./quickprobe --Network 192.168.1.0/24 --SkipPrivateRange=false 
