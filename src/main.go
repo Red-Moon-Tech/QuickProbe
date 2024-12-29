@@ -8,7 +8,9 @@ import (
 	"QuickProbe/pkg/scan"
 	"QuickProbe/pkg/statistic"
 	"context"
+	"fmt"
 	"os"
+	"time"
 )
 
 // Создаём общие обьекты
@@ -71,6 +73,9 @@ func main() {
 		}
 	}
 
+	// Запоминаем время начала сканирования
+	timeStart := time.Now()
+
 	// Запускаем основную петлю для генерации и передачи адресов
 	for !net.Ended {
 		PingIPChannel <- net.String()
@@ -99,9 +104,16 @@ func main() {
 	// Ожидаем завершение работы сканирующих потоков
 	scan.WorkWG.Wait()
 
+	// Запоминаем время конца сканирования
+	timeEnd := time.Now()
+
 	// Завершаем потоки связанные с работой подсистемы сбора статистики
 	statCancel()
 
 	// Выводим результаты сканирования
 	results.ShowResults()
+
+	// Выводим время сканирования
+	fmt.Printf("Scan time was %.2f seconds\n", timeEnd.Sub(timeStart).Seconds())
+
 }
