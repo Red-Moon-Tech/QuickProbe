@@ -4,6 +4,7 @@ import (
 	"QuickProbe/pkg/ports"
 	"flag"
 	"log"
+	"net"
 )
 
 // Инициализируем переменные под хранение флагов
@@ -63,6 +64,8 @@ func ParseFlags() {
 func CheckFlags() {
 	if *InputNet == "None" {
 		log.Fatal("Не указана сеть для сканирования, используйте флаг: --Network")
+	} else if _, _, err := net.ParseCIDR(*InputNet); err != nil {
+		log.Fatal("Неккоретный формат сети. Пример --Network 192.168.1.0/24")
 	}
 	if *AddressBufferSize < *NumberScanThreads {
 		log.Println("WARNING: Рекомендуется устанавливать размер буфера адресов неменее количества сканирующих потоков")
