@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func InterfacesThread(ctx context.Context) {
+func WorkloadThread(ctx context.Context) {
 	stats, _ := net.IOCounters(true)
 
 	for _, stat := range stats {

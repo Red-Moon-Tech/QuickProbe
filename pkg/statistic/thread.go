@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/gosuri/uilive"
+	"github.com/showwin/speedtest-go/speedtest"
 	"sync"
 	"time"
 )
@@ -22,7 +23,8 @@ var (
 	PortsSpeed   int // Скорость в портах в секунду
 
 	IfaceWorkload uint64 // Нагруженность сетевого интерфейса
-	// IfaceThroughput int
+	IfaceInSpeed  speedtest.ByteRate
+	IfaceOutSpeed speedtest.ByteRate
 
 	PingStatus     uint64
 	StatisticMutex sync.Mutex
@@ -34,8 +36,9 @@ func StatisticStart(ctx context.Context, ScanIPChannel chan string, PingIPChanne
 	go MemoryThread(ctx)
 	go BufferThread(ctx, ScanIPChannel, PingIPChannel)
 	go pingThread(ctx)
+	go IfaceSpeed(ctx)
 	if *argflags.ShowInterfaceInfo != "None" {
-		go InterfacesThread(ctx)
+		go WorkloadThread(ctx)
 	}
 }
 
@@ -58,6 +61,8 @@ func statisticThread(ctx context.Context) {
 			output += fmt.Sprintf("Scan Buffer: %d/%d \n", NotCheckedLenBuffer, NotCheckedCapBuffer)
 			output += fmt.Sprintf("Ping Buffer: %d/%d \n", CheckedLenBuffer, CheckedCapBuffer)
 			output += fmt.Sprintf("Ping status: %d ms \n", PingStatus)
+			output += fmt.Sprintf("Download speed: %s \n", IfaceInSpeed)
+			output += fmt.Sprintf("Upload speed: %s \n", IfaceOutSpeed)
 			if *argflags.ShowInterfaceInfo != "None" {
 				output += fmt.Sprintf("Interface %s workload %d mB/sec\n", *argflags.ShowInterfaceInfo, IfaceWorkload/8/1024/1024)
 			}
