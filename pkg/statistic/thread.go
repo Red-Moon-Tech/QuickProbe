@@ -1,6 +1,7 @@
 package statistic
 
 import (
+	"QuickProbe/pkg/argflags"
 	"context"
 	"fmt"
 	"github.com/gosuri/uilive"
@@ -20,6 +21,9 @@ var (
 	PortsCounter int // Счетчик отсканированных портов
 	PortsSpeed   int // Скорость в портах в секунду
 
+	IfaceWorkload uint64 // Нагруженность сетевого интерфейса
+	// IfaceThroughput int
+
 	PingStatus     uint64
 	StatisticMutex sync.Mutex
 )
@@ -30,6 +34,9 @@ func StatisticStart(ctx context.Context, ScanIPChannel chan string, PingIPChanne
 	go MemoryThread(ctx)
 	go BufferThread(ctx, ScanIPChannel, PingIPChannel)
 	go pingThread(ctx)
+	if *argflags.ShowInterfaceInfo != "None" {
+		go InterfacesThread(ctx)
+	}
 }
 
 func statisticThread(ctx context.Context) {
@@ -51,6 +58,9 @@ func statisticThread(ctx context.Context) {
 			output += fmt.Sprintf("Scan Buffer: %d/%d \n", NotCheckedLenBuffer, NotCheckedCapBuffer)
 			output += fmt.Sprintf("Ping Buffer: %d/%d \n", CheckedLenBuffer, CheckedCapBuffer)
 			output += fmt.Sprintf("Ping status: %d ms \n", PingStatus)
+			if *argflags.ShowInterfaceInfo != "None" {
+				output += fmt.Sprintf("Interface %s workload %d mB/sec\n", *argflags.ShowInterfaceInfo, IfaceWorkload/8/1024/1024)
+			}
 
 			StatisticMutex.Unlock()
 

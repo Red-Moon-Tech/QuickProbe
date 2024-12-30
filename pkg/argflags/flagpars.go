@@ -19,6 +19,7 @@ var (
 	SkipPrivateRange  *bool   // Флаг пропуска приватных диапазонов
 	rawPortsList      *string // Строка с необработанными портам
 	PortsList         []int   // Готовый к использованию массив портов
+	ShowInterfaceInfo *string // Флаг показывающий информацию про указанный интерфейс
 )
 
 func InitFlags() {
@@ -32,6 +33,7 @@ func InitFlags() {
 	rawPortsList = flag.String("Ports", "None", "Список портов для сканирования")
 	SkipAddressRange = flag.String("SkipAddressRange", "None", "Пропуск диапозона адрессов")
 	SkipPingThreads = flag.Bool("SkipPingThreads", false, "Пропуск пингующих потоков для принудительного сканирования")
+	ShowInterfaceInfo = flag.String("ShowInterfaceInfo", "None", "Информация про указанный интерфейс")
 
 	// Определяем алиасы для флагов
 	flag.StringVar(InputNet, "n", "None", "Сеть для сканирования (алиас InputNet)")
@@ -43,6 +45,7 @@ func InitFlags() {
 	flag.StringVar(rawPortsList, "p", "None", "Список портов для сканирования (алиас Ports)")
 	flag.StringVar(SkipAddressRange, "sA", "None", "Пропуск диапозона адрессов (алиас SkipAddressRange)")
 	flag.BoolVar(SkipPingThreads, "sPi", false, "Пропуск пингующих потоков для принудительного сканирования (алиас SkipPingThreads)")
+	flag.StringVar(ShowInterfaceInfo, "sIi", "None", "Информация про указанный интерфейс (aлиас ShowInterfaceInfo)")
 }
 
 func ParseFlags() {
