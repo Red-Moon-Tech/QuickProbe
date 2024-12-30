@@ -22,9 +22,9 @@ var (
 	PortsCounter int // Счетчик отсканированных портов
 	PortsSpeed   int // Скорость в портах в секунду
 
-	IfaceWorkload uint64 // Нагруженность сетевого интерфейса
-	IfaceInSpeed  speedtest.ByteRate
-	IfaceOutSpeed speedtest.ByteRate
+	IfaceWorkload      uint64             // Нагруженность сетевого интерфейса
+	IfaceDownloadSpeed speedtest.ByteRate // Скорость загрузки
+	IfaceUploadSpeed   speedtest.ByteRate // Скорость выгрузки
 
 	PingStatus     uint64
 	StatisticMutex sync.Mutex
@@ -61,8 +61,8 @@ func statisticThread(ctx context.Context) {
 			output += fmt.Sprintf("Scan Buffer: %d/%d \n", NotCheckedLenBuffer, NotCheckedCapBuffer)
 			output += fmt.Sprintf("Ping Buffer: %d/%d \n", CheckedLenBuffer, CheckedCapBuffer)
 			output += fmt.Sprintf("Ping status: %d ms \n", PingStatus)
-			output += fmt.Sprintf("Download speed: %s \n", IfaceInSpeed)
-			output += fmt.Sprintf("Upload speed: %s \n", IfaceOutSpeed)
+			output += fmt.Sprintf("Download speed: %s \n", IfaceDownloadSpeed)
+			output += fmt.Sprintf("Upload speed: %s \n", IfaceUploadSpeed)
 			if *argflags.ShowInterfaceInfo != "None" {
 				output += fmt.Sprintf("Interface %s workload %d mB/sec\n", *argflags.ShowInterfaceInfo, IfaceWorkload/8/1024/1024)
 			}

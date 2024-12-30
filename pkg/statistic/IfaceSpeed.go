@@ -25,10 +25,11 @@ func IfaceSpeed(ctx context.Context) {
 			s.DownloadTest()
 			s.UploadTest()
 			StatisticMutex.Lock()
-			IfaceInSpeed = s.DLSpeed
-			IfaceOutSpeed = s.ULSpeed
+			IfaceDownloadSpeed = s.DLSpeed
+			IfaceUploadSpeed = s.ULSpeed
 			StatisticMutex.Unlock()
 
+			s.Context.Reset()
 			time.Sleep(time.Second)
 		}
 	}
